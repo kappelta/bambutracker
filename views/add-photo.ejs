@@ -114,7 +114,6 @@
                     document.getElementById('confirm-controls').classList.add('flex');
                     document.getElementById('scan-line').classList.add('hidden');
                 };
-                reader.readAsDataURL(e.target.result || input.files[0]);
                 reader.readAsDataURL(input.files[0]);
             }
         }
