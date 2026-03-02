@@ -1,0 +1,20 @@
+<nav class="relative z-50 w-full bg-white border-t border-gray-100 px-6 py-3 flex justify-between items-center shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+    <a href="/filaments" class="flex flex-col items-center gap-1 w-16 group">
+        <div class="w-10 h-10 rounded-xl <%= activeNav === 'inventory' ? 'bg-primary/10 text-primary' : 'text-gray-400 group-hover:text-gray-600 group-hover:bg-gray-50' %> flex items-center justify-center transition-colors">
+            <i class="fa-solid fa-layer-group text-lg"></i>
+        </div>
+        <span class="text-[10px] <%= activeNav === 'inventory' ? 'font-bold text-primary' : 'font-medium text-gray-400 group-hover:text-gray-600' %>">Inventory</span>
+    </a>
+    <a href="/filaments/low" class="flex flex-col items-center gap-1 w-16 group">
+        <div class="w-10 h-10 rounded-xl <%= activeNav === 'low' ? 'bg-primary/10 text-primary' : 'text-gray-400 group-hover:text-gray-600 group-hover:bg-gray-50' %> flex items-center justify-center transition-colors">
+            <i class="fa-solid fa-triangle-exclamation text-lg"></i>
+        </div>
+        <span class="text-[10px] <%= activeNav === 'low' ? 'font-bold text-primary' : 'font-medium text-gray-400 group-hover:text-gray-600' %>">Low</span>
+    </a>
+    <a href="/settings" class="flex flex-col items-center gap-1 w-16 group">
+        <div class="w-10 h-10 rounded-xl <%= activeNav === 'settings' ? 'bg-primary/10 text-primary' : 'text-gray-400 group-hover:text-gray-600 group-hover:bg-gray-50' %> flex items-center justify-center transition-colors">
+            <i class="fa-solid fa-gear text-lg"></i>
+        </div>
+        <span class="text-[10px] <%= activeNav === 'settings' ? 'font-bold text-primary' : 'font-medium text-gray-400 group-hover:text-gray-600' %>">Settings</span>
+    </a>
+</nav>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/head') %>
+    <title>Update Remaining - <%= filament.brand %></title>
+    <style>
+        .circular-chart { display: block; margin: 0 auto; max-width: 100%; max-height: 250px; }
+        .circle-bg { fill: none; stroke: #F3F4F6; stroke-width: 2.5; }
+        .circle { fill: none; stroke-width: 2.5; stroke-linecap: round; transition: stroke-dasharray 0.3s ease; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans min-h-screen flex flex-col items-center justify-center p-0 sm:p-4">
+    <div class="relative w-full max-w-md min-h-screen md:min-h-0 md:max-h-[95vh] bg-surface md:rounded-[40px] md:shadow-2xl overflow-hidden flex flex-col mx-auto">
+
+        <header class="sticky top-0 z-40 px-4 sm:px-6 py-4 flex items-center justify-between bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm">
+            <a href="/filaments/<%= filament.id %>" class="w-8 h-8 flex items-center justify-center rounded-full text-text-muted hover:text-text-main hover:bg-gray-100 transition-colors">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </a>
+            <h1 class="text-base sm:text-lg font-bold text-text-main">Update Remaining</h1>
+            <button type="submit" form="remaining-form" class="text-sm font-bold text-primary hover:text-orange-700 transition-colors px-2 py-1">Save</button>
+        </header>
+
+        <main class="flex-1 overflow-y-auto hide-scrollbar bg-surface relative p-4 sm:p-6 flex flex-col items-center">
+            <form id="remaining-form" action="/filaments/<%= filament.id %>/remaining?_method=PUT" method="POST" class="w-full max-w-lg mx-auto space-y-8">
+
+                <!-- Filament Info Card -->
+                <div class="bg-white p-4 rounded-2xl shadow-soft border border-gray-100 flex items-center gap-4 animate-fade-in">
+                    <div class="w-16 h-16 rounded-xl overflow-hidden shadow-sm border border-gray-100 flex-shrink-0">
+                        <% if (filament.photo_url) { %>
+                            <img class="w-full h-full object-cover" src="<%= filament.photo_url %>" alt="<%= filament.brand %>">
+                        <% } else { %>
+                            <div class="w-full h-full flex items-center justify-center" style="background-color: <%= filament.color_hex %>20">
+                                <i class="fa-solid fa-layer-group text-xl" style="color: <%= filament.color_hex %>"></i>
+                            </div>
+                        <% } %>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="text-text-main font-bold text-base truncate"><%= filament.brand %></h3>
+                        <p class="text-text-muted text-sm truncate"><%= filament.material %> &bull; <%= filament.color %></p>
+                        <div class="flex items-center gap-2 mt-1">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-green-100 text-green-800 capitalize"><%= filament.status %></span>
+                            <% if (filament.location) { %><span class="text-[10px] text-gray-400"><%= filament.location %></span><% } %>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mode Toggle -->
+                <div class="flex flex-col items-center space-y-6 animate-fade-in">
+                    <div class="bg-gray-100 p-1 rounded-xl flex relative w-64 shadow-inner">
+                        <div id="mode-indicator" class="absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] bg-white rounded-lg shadow-sm transition-all duration-300 ease-out border border-gray-200"></div>
+                        <button type="button" class="flex-1 relative z-10 py-1.5 text-xs font-bold text-text-main mode-btn" data-mode="grams" onclick="switchMode('grams')">Grams (g)</button>
+                        <button type="button" class="flex-1 relative z-10 py-1.5 text-xs font-bold text-text-muted mode-btn" data-mode="percent" onclick="switchMode('percent')">Percent (%)</button>
+                    </div>
+
+                    <!-- Circular Progress -->
+                    <div class="relative w-64 h-64 flex items-center justify-center">
+                        <svg viewBox="0 0 36 36" class="circular-chart w-full h-full transform -rotate-90">
+                            <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                            <path id="circle-path" class="circle" stroke-dasharray="<%= filament.remaining %>, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" stroke="#F97316" />
+                        </svg>
+                        <div class="absolute inset-0 flex flex-col items-center justify-center p-4">
+                            <input type="number" id="main-value" value="<%= settings.tracking_mode === 'grams' ? Math.round(filament.total_weight * filament.remaining / 100) : filament.remaining %>" class="w-full text-center bg-transparent text-5xl font-extrabold text-text-main border-none focus:ring-0 p-0 m-0" onchange="handleInputChange(this.value)">
+                            <span id="unit-label" class="text-base font-semibold text-gray-700 mt-1"><%= settings.tracking_mode === 'grams' ? 'grams remaining' : '% remaining' %></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slider -->
+                <div class="space-y-6 px-2 animate-fade-in">
+                    <input type="range" min="0" max="100" value="<%= filament.remaining %>" class="w-full" id="update-slider" oninput="handleSliderChange(this.value)">
+                    <input type="hidden" name="remaining" id="remaining-hidden" value="<%= filament.remaining %>">
+
+                    <!-- Presets -->
+                    <div class="grid grid-cols-5 gap-3">
+                        <% [0, 25, 50, 75, 100].forEach(p => { %>
+                            <button type="button" class="preset-btn flex flex-col items-center justify-center py-3 bg-white border border-gray-200 rounded-xl shadow-sm hover:border-primary hover:bg-orange-50 active:scale-95 transition-all" onclick="setPreset(<%= p %>)">
+                                <span class="text-xs font-bold text-text-muted"><%= p %>%</span>
+                                <div class="w-full h-1 bg-gray-100 mt-1.5 rounded-full overflow-hidden">
+                                    <div class="h-full bg-<%= p === 0 ? 'red-400' : (p <= 25 ? 'orange-400' : (p <= 50 ? 'yellow-400' : 'green-500')) %>" style="width: <%= p %>%"></div>
+                                </div>
+                            </button>
+                        <% }) %>
+                    </div>
+                </div>
+
+                <!-- Mark Empty -->
+                <div class="pt-4 space-y-3 animate-fade-in">
+                    <button type="button" onclick="setPreset(0); document.getElementById('remaining-form').submit()" class="w-full bg-white border border-danger/30 text-danger font-semibold py-4 rounded-xl shadow-sm hover:bg-red-50 hover:border-danger active:scale-95 transition-all flex items-center justify-center gap-2">
+                        <i class="fa-regular fa-trash-can"></i>Mark as Empty
+                    </button>
+                    <p class="text-center text-xs text-text-muted pb-4">
+                        Last updated: <span class="font-medium text-text-main"><%= filament.updated_at ? new Date(filament.updated_at).toLocaleDateString() : 'Never' %></span>
+                    </p>
+                </div>
+            </form>
+        </main>
+
+        <% locals.activeNav = 'inventory' %>
+        <%- include('partials/nav') %>
+    </div>
+
+    <script>
+        const totalWeight = <%= filament.total_weight %>;
+        let currentMode = '<%= settings.tracking_mode %>';
+
+        function switchMode(mode) {
+            currentMode = mode;
+            const indicator = document.getElementById('mode-indicator');
+            const btns = document.querySelectorAll('.mode-btn');
+            if (mode === 'grams') {
+                indicator.style.transform = 'translateX(0%)';
+                btns[0].classList.replace('text-text-muted', 'text-text-main');
+                btns[1].classList.replace('text-text-main', 'text-text-muted');
+            } else {
+                indicator.style.transform = 'translateX(100%)';
+                btns[1].classList.replace('text-text-muted', 'text-text-main');
+                btns[0].classList.replace('text-text-main', 'text-text-muted');
+            }
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            const percent = parseInt(document.getElementById('update-slider').value);
+            const mainInput = document.getElementById('main-value');
+            const unitLabel = document.getElementById('unit-label');
+
+            if (currentMode === 'grams') {
+                mainInput.value = Math.round(totalWeight * percent / 100);
+                unitLabel.textContent = 'grams remaining';
+            } else {
+                mainInput.value = percent;
+                unitLabel.textContent = '% remaining';
+            }
+
+            document.getElementById('circle-path').setAttribute('stroke-dasharray', percent + ', 100');
+            document.getElementById('circle-path').setAttribute('stroke', percent <= 20 ? '#EF4444' : percent <= 50 ? '#FBBF24' : '#F97316');
+            document.getElementById('remaining-hidden').value = percent;
+        }
+
+        function handleSliderChange(val) {
+            updateDisplay();
+        }
+
+        function handleInputChange(val) {
+            let percent;
+            if (currentMode === 'grams') {
+                percent = Math.round((parseInt(val) / totalWeight) * 100);
+            } else {
+                percent = parseInt(val);
+            }
+            percent = Math.max(0, Math.min(100, percent || 0));
+            document.getElementById('update-slider').value = percent;
+            updateDisplay();
+        }
+
+        function setPreset(p) {
+            document.getElementById('update-slider').value = p;
+            updateDisplay();
+        }
+
+        // Init mode display
+        if (currentMode === 'percent') switchMode('percent');
+    </script>
+</body>
+</html>

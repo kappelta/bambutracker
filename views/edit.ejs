@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/head') %>
+    <title>Edit - <%= filament.brand %></title>
+    <style>
+        .input-group:focus-within label { color: #F97316; }
+        .input-group:focus-within i { color: #F97316; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans min-h-screen flex flex-col items-center justify-center p-0 sm:p-4">
+    <div class="relative w-full max-w-md min-h-screen md:min-h-0 md:max-h-[95vh] bg-surface md:rounded-[40px] md:shadow-2xl overflow-hidden flex flex-col mx-auto">
+
+        <header class="sticky top-0 z-40 px-4 sm:px-6 py-4 flex items-center justify-between bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm">
+            <a href="/filaments/<%= filament.id %>" class="text-sm font-medium text-text-muted hover:text-text-main transition-colors px-2 py-1">Cancel</a>
+            <h1 class="text-base sm:text-lg font-bold text-text-main">Edit Filament</h1>
+            <button type="submit" form="edit-form" class="text-sm font-bold text-primary hover:text-orange-700 transition-colors px-2 py-1">Save</button>
+        </header>
+
+        <main class="flex-1 overflow-y-auto hide-scrollbar bg-surface relative p-4 sm:p-6">
+            <form id="edit-form" action="/filaments/<%= filament.id %>?_method=PUT" method="POST" enctype="multipart/form-data" class="space-y-6 max-w-lg mx-auto">
+
+                <!-- Photo -->
+                <div class="flex flex-col items-center space-y-3 animate-fade-in">
+                    <div class="relative group">
+                        <div class="w-32 h-32 rounded-3xl overflow-hidden shadow-card border-4 border-white relative">
+                            <% if (filament.photo_url) { %>
+                                <img id="edit-preview" class="w-full h-full object-cover" src="<%= filament.photo_url %>" alt="<%= filament.brand %>">
+                            <% } else { %>
+                                <div id="edit-preview" class="w-full h-full flex items-center justify-center" style="background-color: <%= filament.color_hex %>30">
+                                    <i class="fa-solid fa-layer-group text-3xl" style="color: <%= filament.color_hex %>"></i>
+                                </div>
+                            <% } %>
+                            <label class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
+                                <i class="fa-solid fa-camera text-white text-2xl"></i>
+                                <input type="file" name="photo" accept="image/*" class="hidden" onchange="previewEdit(this)">
+                            </label>
+                        </div>
+                        <label class="absolute -bottom-2 -right-2 w-10 h-10 rounded-full bg-primary text-white shadow-lg flex items-center justify-center hover:bg-orange-600 cursor-pointer border-2 border-white">
+                            <i class="fa-solid fa-camera text-sm"></i>
+                            <input type="file" name="photo" accept="image/*" class="hidden" onchange="previewEdit(this)">
+                        </label>
+                    </div>
+                    <p class="text-xs text-text-muted font-medium">Tap to retake photo</p>
+                </div>
+
+                <!-- Basic Info -->
+                <div class="bg-white p-5 rounded-3xl shadow-soft border border-gray-100 space-y-4 animate-fade-in">
+                    <div class="flex items-center gap-2 mb-2"><i class="fa-solid fa-tag text-primary text-sm"></i><h3 class="text-xs font-bold uppercase tracking-wider text-text-muted">Basic Info</h3></div>
+
+                    <div class="input-group space-y-1.5">
+                        <label class="text-xs font-semibold text-text-muted ml-1">Brand</label>
+                        <input type="text" name="brand" value="<%= filament.brand %>" required class="w-full bg-input-bg text-text-main text-sm font-medium px-4 py-3 rounded-xl border-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all">
+                    </div>
+
+                    <div class="input-group space-y-1.5">
+                        <label class="text-xs font-semibold text-text-muted ml-1">Material</label>
+                        <select name="material" class="w-full bg-input-bg text-text-main text-sm font-medium px-4 py-3 rounded-xl border-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all appearance-none">
+                            <% ['PLA', 'PETG', 'ABS', 'TPU', 'ASA', 'Other'].forEach(m => { %>
+                                <option value="<%= m %>" <%= filament.material === m ? 'selected' : '' %>><%= m %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+
+                    <div class="input-group space-y-1.5">
+                        <label class="text-xs font-semibold text-text-muted ml-1">Color</label>
+                        <div class="relative flex items-center">
+                            <input type="color" name="color_hex" value="<%= filament.color_hex %>" class="absolute left-3 w-4 h-4 rounded-full border-0 p-0 cursor-pointer z-10">
+                            <input type="text" name="color" value="<%= filament.color %>" required class="w-full bg-input-bg text-text-main text-sm font-medium px-4 py-3 pl-10 rounded-xl border-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status & Remaining -->
+                <div class="bg-white p-5 rounded-3xl shadow-soft border border-gray-100 space-y-5 animate-fade-in">
+                    <div class="flex items-center gap-2 mb-2"><i class="fa-solid fa-chart-pie text-primary text-sm"></i><h3 class="text-xs font-bold uppercase tracking-wider text-text-muted">Status & Remaining</h3></div>
+
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-text-muted ml-1">Status</label>
+                        <div class="bg-input-bg p-1 rounded-xl flex">
+                            <% ['sealed', 'open', 'empty'].forEach((s, i) => { %>
+                                <label class="flex-1 py-2 text-xs font-bold text-center cursor-pointer rounded-lg transition-all capitalize <%= filament.status === s ? 'bg-white text-text-main shadow-sm' : 'text-text-muted hover:text-text-main' %>">
+                                    <input type="radio" name="status" value="<%= s %>" <%= filament.status === s ? 'checked' : '' %> class="hidden" onchange="updateStatusUI()"><%= s %>
+                                </label>
+                            <% }) %>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4 pt-2">
+                        <div class="flex justify-between items-end">
+                            <label class="text-xs font-semibold text-text-muted ml-1">Remaining</label>
+                            <div class="flex items-baseline gap-1">
+                                <span id="edit-remaining-val" class="text-xl font-bold text-primary"><%= filament.remaining %></span>
+                                <span class="text-sm font-medium text-text-muted">%</span>
+                            </div>
+                        </div>
+                        <input type="range" name="remaining" min="0" max="100" value="<%= filament.remaining %>" class="w-full" id="edit-slider" oninput="document.getElementById('edit-remaining-val').textContent = this.value">
+                        <div class="flex justify-between text-[10px] font-medium text-gray-400 px-1"><span>0%</span><span>50%</span><span>100%</span></div>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-semibold text-text-muted ml-1">Total Weight (g)</label>
+                        <input type="number" name="total_weight" value="<%= filament.total_weight %>" class="w-full bg-input-bg text-text-main text-sm font-medium px-4 py-3 rounded-xl border-none focus:ring-2 focus:ring-primary/20">
+                    </div>
+                </div>
+
+                <!-- Location & Notes -->
+                <div class="bg-white p-5 rounded-3xl shadow-soft border border-gray-100 space-y-4 animate-fade-in">
+                    <div class="flex items-center gap-2 mb-2"><i class="fa-solid fa-location-dot text-primary text-sm"></i><h3 class="text-xs font-bold uppercase tracking-wider text-text-muted">Details</h3></div>
+
+                    <div class="input-group space-y-1.5">
+                        <label class="text-xs font-semibold text-text-muted ml-1">Location <span class="text-gray-300 font-normal">(Optional)</span></label>
+                        <input type="text" name="location" value="<%= filament.location || '' %>" placeholder="e.g. Shelf A" class="w-full bg-input-bg text-text-main text-sm font-medium px-4 py-3 rounded-xl border-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all">
+                    </div>
+
+                    <div class="input-group space-y-1.5">
+                        <label class="text-xs font-semibold text-text-muted ml-1">Notes <span class="text-gray-300 font-normal">(Optional)</span></label>
+                        <textarea name="notes" rows="3" placeholder="Add printing details, temp settings, etc." class="w-full bg-input-bg text-text-main text-sm font-medium px-4 py-3 rounded-xl border-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all resize-none"><%= filament.notes || '' %></textarea>
+                    </div>
+                </div>
+
+                <div class="h-4"></div>
+            </form>
+        </main>
+
+        <% locals.activeNav = 'inventory' %>
+        <%- include('partials/nav') %>
+    </div>
+
+    <script>
+        function previewEdit(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const preview = document.getElementById('edit-preview');
+                    if (preview.tagName === 'IMG') {
+                        preview.src = e.target.result;
+                    } else {
+                        preview.outerHTML = '<img id="edit-preview" class="w-full h-full object-cover" src="' + e.target.result + '">';
+                    }
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+</body>
+</html>

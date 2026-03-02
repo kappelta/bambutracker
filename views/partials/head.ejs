@@ -1,0 +1,49 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                fontFamily: { sans: ['Inter', 'sans-serif'] },
+                colors: {
+                    primary: '#F97316',
+                    secondary: '#1F2937',
+                    accent: '#FFF7ED',
+                    surface: '#F9FAFB',
+                    'card-bg': '#FFFFFF',
+                    'text-main': '#111827',
+                    'text-muted': '#6B7280',
+                    'input-bg': '#F3F4F6',
+                    'danger': '#EF4444',
+                    'success': '#10B981',
+                    'warning': '#F59E0B',
+                },
+                boxShadow: {
+                    'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+                    'card': '0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06)',
+                    'floating': '0 10px 25px -5px rgba(249, 115, 22, 0.4), 0 8px 10px -6px rgba(249, 115, 22, 0.2)',
+                    'modal': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                },
+                borderRadius: { 'xl': '1rem', '2xl': '1.5rem', '3xl': '2rem' },
+            }
+        }
+    }
+</script>
+<style>
+    ::-webkit-scrollbar { display: none; }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+    input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+    input[type=range]::-webkit-slider-thumb {
+        -webkit-appearance: none; height: 28px; width: 28px; border-radius: 50%;
+        background: #FFFFFF; cursor: pointer; margin-top: -12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15); border: 6px solid #F97316;
+    }
+    input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); }
+    input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; background: #E5E7EB; border-radius: 999px; }
+</style>

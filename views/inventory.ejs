@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/head') %>
+    <title>Inventory - BambuTracker</title>
+    <style>
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
+        .floating-btn { animation: float 4s ease-in-out infinite; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans min-h-screen flex flex-col items-center justify-center p-0 sm:p-4">
+    <div class="relative w-full max-w-md min-h-screen md:min-h-[850px] md:h-[850px] bg-surface md:rounded-[40px] md:shadow-2xl overflow-hidden flex flex-col">
+
+        <header class="bg-white px-4 pt-6 pb-2 sticky top-0 z-30 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+                <h1 class="text-2xl font-bold text-text-main tracking-tight">Inventory</h1>
+                <div class="flex items-center gap-3">
+                    <a href="/filaments/low" class="w-9 h-9 flex items-center justify-center rounded-full bg-gray-50 text-gray-500 hover:bg-gray-100 transition-colors relative">
+                        <i class="fa-regular fa-bell"></i>
+                    </a>
+                </div>
+            </div>
+
+            <form action="/filaments" method="GET" class="relative mb-4">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fa-solid fa-magnifying-glass text-gray-400 text-sm"></i>
+                </div>
+                <input type="text" name="search" value="<%= filters.search || '' %>"
+                       class="block w-full pl-10 pr-3 py-3 border-none rounded-2xl bg-gray-50 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-shadow shadow-inner"
+                       placeholder="Search brand, material, color...">
+            </form>
+
+            <div class="relative group">
+                <div class="flex gap-2 overflow-x-auto hide-scrollbar pb-2 -mx-4 px-4 scroll-smooth">
+                    <a href="/filaments" class="flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-medium border shadow-sm transition-transform active:scale-95 <%= !filters.material && !filters.status ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-600 border-gray-200 hover:border-primary hover:text-primary' %>">All Items</a>
+                    <% ['PLA', 'PETG', 'ABS', 'TPU', 'ASA'].forEach(mat => { %>
+                        <a href="/filaments?material=<%= mat %>" class="flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-medium border shadow-sm whitespace-nowrap transition-colors active:scale-95 <%= filters.material === mat ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-600 border-gray-200 hover:border-primary hover:text-primary' %>"><%= mat %></a>
+                    <% }) %>
+                    <% ['sealed', 'open', 'empty'].forEach(st => { %>
+                        <a href="/filaments?status=<%= st %>" class="flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-medium border shadow-sm whitespace-nowrap transition-colors active:scale-95 capitalize <%= filters.status === st ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-600 border-gray-200 hover:border-primary hover:text-primary' %>"><%= st %></a>
+                    <% }) %>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto px-4 py-4 space-y-3 pb-24 bg-surface">
+            <% if (filaments.length === 0) { %>
+                <div class="flex flex-col items-center justify-center py-16 text-center animate-fade-in">
+                    <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                        <i class="fa-solid fa-layer-group text-3xl text-gray-300"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-text-main mb-2">No Filaments Yet</h3>
+                    <p class="text-sm text-text-muted max-w-xs">Add your first filament spool to start tracking your inventory.</p>
+                    <a href="/filaments/new" class="mt-6 px-6 py-3 bg-primary text-white font-bold rounded-xl shadow-floating hover:bg-orange-600 transition-colors">
+                        <i class="fa-solid fa-plus mr-2"></i>Add Filament
+                    </a>
+                </div>
+            <% } %>
+
+            <% filaments.forEach(f => { %>
+                <a href="/filaments/<%= f.id %>" class="group relative bg-<%= f.status === 'empty' ? 'gray-50' : 'white' %> rounded-2xl p-3 <%= f.status === 'empty' ? 'border border-dashed border-gray-300' : 'shadow-card border border-gray-100' %> transition-all hover:shadow-md active:scale-[0.99] block">
+                    <div class="flex gap-3 <%= f.status === 'empty' ? 'opacity-60 group-hover:opacity-100' : '' %>">
+                        <div class="relative w-16 h-16 flex-shrink-0 rounded-xl overflow-hidden bg-gray-100 border border-gray-100 <%= f.status === 'empty' ? 'grayscale' : '' %>">
+                            <% if (f.photo_url) { %>
+                                <img class="w-full h-full object-cover" src="<%= f.photo_url %>" alt="<%= f.brand %>">
+                            <% } else { %>
+                                <div class="w-full h-full flex items-center justify-center" style="background-color: <%= f.color_hex %>20">
+                                    <i class="fa-solid fa-layer-group text-xl" style="color: <%= f.color_hex %>"></i>
+                                </div>
+                            <% } %>
+                            <% if (f.status !== 'empty') { %>
+                                <div class="absolute bottom-0 left-0 w-full h-1" style="background-color: <%= f.color_hex %>"></div>
+                            <% } %>
+                        </div>
+                        <div class="flex-1 min-w-0 flex flex-col justify-center">
+                            <div class="flex justify-between items-start mb-1">
+                                <h3 class="text-sm font-bold text-gray-900 truncate pr-2 <%= f.status === 'empty' ? 'line-through text-gray-500' : '' %>"><%= f.brand %> - <%= f.material %></h3>
+                                <% if (f.status === 'sealed') { %>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-green-50 text-green-700 border border-green-100">Sealed</span>
+                                <% } else if (f.status === 'open') { %>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-700 border border-blue-100">Open</span>
+                                <% } else if (f.remaining <= settings.low_threshold && f.remaining > 0) { %>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-orange-50 text-orange-700 border border-orange-100">Low</span>
+                                <% } else { %>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-gray-200 text-gray-600 border border-gray-300">Empty</span>
+                                <% } %>
+                            </div>
+                            <p class="text-xs text-gray-500 mb-2 truncate"><%= f.color %></p>
+                            <div class="flex items-center gap-2">
+                                <div class="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                    <div class="h-full rounded-full <%= f.remaining <= settings.low_threshold ? 'bg-red-500' : (f.remaining >= 80 ? 'bg-green-500' : 'bg-primary') %>" style="width: <%= f.remaining %>%"></div>
+                                </div>
+                                <span class="text-xs font-semibold w-8 text-right <%= f.remaining <= settings.low_threshold ? 'text-red-600' : 'text-gray-700' %>"><%= settings.tracking_mode === 'grams' ? Math.round(f.total_weight * f.remaining / 100) + 'g' : f.remaining + '%' %></span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            <% }) %>
+        </main>
+
+        <div class="absolute bottom-24 right-4 z-40">
+            <a href="/filaments/new" class="floating-btn w-14 h-14 bg-primary rounded-full shadow-floating flex items-center justify-center text-white hover:bg-orange-600 transition-colors active:scale-90 group">
+                <i class="fa-solid fa-plus text-xl group-hover:rotate-90 transition-transform duration-300"></i>
+            </a>
+        </div>
+
+        <% locals.activeNav = 'inventory' %>
+        <%- include('partials/nav') %>
+    </div>
+</body>
+</html>

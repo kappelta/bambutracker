@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/head') %>
+    <title>Settings - BambuTracker</title>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans min-h-screen flex flex-col items-center justify-center p-0 sm:p-4">
+    <div class="relative w-full max-w-md min-h-screen md:min-h-0 md:max-h-[95vh] bg-surface md:rounded-[40px] md:shadow-2xl overflow-hidden flex flex-col mx-auto">
+
+        <header class="sticky top-0 z-40 px-4 sm:px-6 py-4 flex items-center justify-between bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm">
+            <h1 class="text-lg md:text-xl font-bold text-text-main">Settings</h1>
+            <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden border-2 border-white shadow-sm flex items-center justify-center">
+                <i class="fa-solid fa-user text-gray-400"></i>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto hide-scrollbar bg-surface relative p-4 md:p-6 pb-24">
+            <div class="max-w-lg mx-auto space-y-6">
+
+                <!-- Preferences Section -->
+                <section class="animate-fade-in">
+                    <h2 class="text-sm font-bold text-text-muted uppercase tracking-wider mb-3 px-1">Preferences</h2>
+                    <form action="/settings?_method=PUT" method="POST" id="settings-form">
+                        <div class="bg-white rounded-2xl shadow-card border border-gray-100 overflow-hidden">
+                            <!-- Tracking Mode -->
+                            <div class="p-4 sm:p-6 border-b border-gray-50">
+                                <div class="flex items-start gap-3 mb-4">
+                                    <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-scale-balanced"></i></div>
+                                    <div>
+                                        <h3 class="font-bold text-text-main text-base">Tracking Unit</h3>
+                                        <p class="text-xs text-text-muted mt-1">Choose how to track remaining filament.</p>
+                                    </div>
+                                </div>
+                                <div class="flex bg-gray-100 p-1 rounded-xl">
+                                    <button type="button" onclick="setTrackingMode('percent')" id="btn-percent" class="flex-1 px-6 py-2 rounded-lg text-xs font-bold transition-all <%= settings.tracking_mode === 'percent' ? 'bg-white text-text-main shadow-sm' : 'text-text-muted hover:text-text-main' %>">Percent (%)</button>
+                                    <button type="button" onclick="setTrackingMode('grams')" id="btn-grams" class="flex-1 px-6 py-2 rounded-lg text-xs font-bold transition-all <%= settings.tracking_mode === 'grams' ? 'bg-white text-text-main shadow-sm' : 'text-text-muted hover:text-text-main' %>">Grams (g)</button>
+                                </div>
+                                <input type="hidden" name="tracking_mode" id="tracking_mode" value="<%= settings.tracking_mode %>">
+                            </div>
+
+                            <!-- Low Threshold -->
+                            <div class="p-4 sm:p-6">
+                                <div class="flex items-start gap-3 mb-4">
+                                    <div class="w-10 h-10 rounded-xl bg-orange-50 text-primary flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-bell"></i></div>
+                                    <div class="flex-1">
+                                        <div class="flex justify-between items-center mb-1">
+                                            <h3 class="font-bold text-text-main text-base">Low Stock Threshold</h3>
+                                            <span class="text-primary font-bold bg-orange-50 px-3 py-1 rounded-lg text-sm" id="threshold-value"><%= settings.low_threshold %>%</span>
+                                        </div>
+                                        <p class="text-xs text-text-muted mb-6">Items below this appear in "Low Stock".</p>
+                                        <input type="range" name="low_threshold" min="5" max="50" value="<%= settings.low_threshold %>" class="w-full" id="threshold-slider" oninput="document.getElementById('threshold-value').textContent = this.value + '%'">
+                                        <div class="flex justify-between text-[10px] text-gray-400 mt-2 font-medium px-1"><span>5%</span><span>25%</span><span>50%</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full mt-4 bg-primary text-white font-bold py-3 rounded-xl shadow-floating hover:bg-orange-600 active:scale-[0.98] transition-all">Save Settings</button>
+                    </form>
+                </section>
+
+                <!-- Data Management -->
+                <section class="animate-fade-in" style="animation-delay: 0.1s;">
+                    <h2 class="text-sm font-bold text-text-muted uppercase tracking-wider mb-3 px-1 mt-2">Data Management</h2>
+                    <div class="bg-white rounded-2xl shadow-card border border-gray-100 overflow-hidden">
+                        <a href="/settings/export" class="p-4 sm:p-5 border-b border-gray-50 flex items-center justify-between hover:bg-gray-50 transition-colors group block">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-green-50 text-success flex items-center justify-center"><i class="fa-solid fa-file-export"></i></div>
+                                <div>
+                                    <h3 class="font-bold text-text-main group-hover:text-primary transition-colors">Export Inventory</h3>
+                                    <p class="text-xs text-text-muted">Download your data as JSON.</p>
+                                </div>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-gray-300 group-hover:text-primary"></i>
+                        </a>
+                    </div>
+                </section>
+
+                <!-- Danger Zone -->
+                <section class="animate-fade-in" style="animation-delay: 0.2s;">
+                    <h2 class="text-sm font-bold text-danger uppercase tracking-wider mb-3 px-1 mt-2">Danger Zone</h2>
+                    <div class="bg-white rounded-2xl shadow-card border border-red-100 overflow-hidden">
+                        <div class="p-4 sm:p-5 flex items-center justify-between gap-4">
+                            <div class="flex items-start gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-red-50 text-danger flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-trash-can"></i></div>
+                                <div>
+                                    <h3 class="font-bold text-text-main">Clear All Data</h3>
+                                    <p class="text-xs text-text-muted mt-1">Permanently remove all records.</p>
+                                </div>
+                            </div>
+                            <button type="button" onclick="document.getElementById('delete-modal').classList.remove('hidden')" class="px-4 py-2.5 rounded-xl bg-white border border-red-200 text-danger text-xs font-bold hover:bg-red-50 transition-colors shadow-sm whitespace-nowrap">Delete All</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- App Info -->
+                <section class="text-center pt-8 pb-4 animate-fade-in" style="animation-delay: 0.3s;">
+                    <div class="w-16 h-16 bg-white rounded-2xl shadow-sm border border-gray-100 mx-auto flex items-center justify-center mb-4">
+                        <i class="fa-solid fa-layer-group text-2xl text-primary"></i>
+                    </div>
+                    <h3 class="text-sm font-bold text-text-main">BambuTracker</h3>
+                    <p class="text-xs text-text-muted mt-1">Version 1.0.0</p>
+                </section>
+            </div>
+        </main>
+
+        <% locals.activeNav = 'settings' %>
+        <%- include('partials/nav') %>
+
+        <!-- Delete Modal -->
+        <div id="delete-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+            <div class="bg-white rounded-3xl shadow-modal w-full max-w-sm overflow-hidden">
+                <div class="p-6 text-center">
+                    <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fa-solid fa-triangle-exclamation text-2xl text-danger"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-text-main mb-2">Delete all data?</h3>
+                    <p class="text-sm text-text-muted mb-6">This action cannot be undone. All inventory records will be permanently deleted.</p>
+                    <div class="flex flex-col gap-3">
+                        <form action="/settings/clear?_method=DELETE" method="POST">
+                            <button type="submit" class="w-full py-3 bg-danger text-white rounded-xl font-bold hover:bg-red-600 transition-colors shadow-lg shadow-red-200">Yes, Delete Everything</button>
+                        </form>
+                        <button type="button" onclick="document.getElementById('delete-modal').classList.add('hidden')" class="w-full py-3 bg-white border border-gray-200 text-text-main rounded-xl font-bold hover:bg-gray-50 transition-colors">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function setTrackingMode(mode) {
+            document.getElementById('tracking_mode').value = mode;
+            const btnP = document.getElementById('btn-percent');
+            const btnG = document.getElementById('btn-grams');
+            if (mode === 'percent') {
+                btnP.classList.add('bg-white', 'text-text-main', 'shadow-sm');
+                btnP.classList.remove('text-text-muted');
+                btnG.classList.remove('bg-white', 'text-text-main', 'shadow-sm');
+                btnG.classList.add('text-text-muted');
+            } else {
+                btnG.classList.add('bg-white', 'text-text-main', 'shadow-sm');
+                btnG.classList.remove('text-text-muted');
+                btnP.classList.remove('bg-white', 'text-text-main', 'shadow-sm');
+                btnP.classList.add('text-text-muted');
+            }
+        }
+    </script>
+</body>
+</html>
